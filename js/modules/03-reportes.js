@@ -119,23 +119,92 @@ function groupSum(list, keyFn){
   list.forEach(r=>{
     const k = keyFn(r) || '(sin dato)';
     if(!map[k]) map[k] = { caras:0, costo:0, registros:0 };
-    map[k].caras += r.totalCaras;
-    map[k].costo += r.totalCaras * precioDeRegistro(r);
+    map[k].caras += Number(r.totalCaras) || 0;
+    map[k].costo += (Number(r.totalCaras) || 0) * precioDeRegistro(r);
     map[k].registros += 1;
   });
   return Object.entries(map).sort((a,b)=> b[1].caras - a[1].caras);
 }
 
+const NOMBRES_MESES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+function obtenerClaveMes(fecha){
+  return String(fecha || '').slice(0, 7);
+}
+
+function formatearMesRanking(claveMes){
+  const [anio, mes] = claveMes.split('-');
+  const indiceMes = Number(mes) - 1;
+  return `${NOMBRES_MESES[indiceMes] || mes} ${anio}`;
+}
+
+function obtenerMesesRanking(){
+  const meses = new Set();
+
+  records.forEach(r => {
+    const clave = obtenerClaveMes(r.fecha);
+    if(/^\d{4}-\d{2}$/.test(clave)) meses.add(clave);
+  });
+
+  const hoy = new Date();
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+  meses.add(mesActual);
+
+  return [...meses].sort((a,b)=> b.localeCompare(a));
+}
+
+function actualizarSelectorMesRanking(){
+  const select = document.getElementById('selectMesRanking');
+  if(!select) return;
+
+  const valorActual = select.value;
+  const meses = obtenerMesesRanking();
+  const hoy = new Date();
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+
+  select.innerHTML = meses.map(mes =>
+    `<option value="${mes}">${formatearMesRanking(mes)}</option>`
+  ).join('');
+
+  if(meses.includes(valorActual)) {
+    select.value = valorActual;
+  } else if(meses.includes(mesActual)) {
+    select.value = mesActual;
+  } else if(meses.length) {
+    select.value = meses[0];
+  }
+}
+
+function obtenerRegistrosMesRanking(){
+  const select = document.getElementById('selectMesRanking');
+  const mesSeleccionado = select ? select.value : '';
+  return records.filter(r => obtenerClaveMes(r.fecha) === mesSeleccionado);
+}
+
 function renderReportes(){
-  const totalCaras = records.reduce((s,r)=> s + r.totalCaras, 0);
-  const totalCopias = records.reduce((s,r)=> s + r.copias, 0);
-  const totalCosto = records.reduce((s,r)=> s + r.totalCaras * precioDeRegistro(r), 0);
+  actualizarSelectorMesRanking();
+
+  const selectMes = document.getElementById('selectMesRanking');
+  const mesSeleccionado = selectMes ? selectMes.value : '';
+  const nombreMes = mesSeleccionado ? formatearMesRanking(mesSeleccionado) : 'mes seleccionado';
+  const monthRecords = obtenerRegistrosMesRanking();
+
+  const totalCaras = monthRecords.reduce((s,r)=> s + (Number(r.totalCaras) || 0), 0);
+  const totalCopias = monthRecords.reduce((s,r)=> s + (Number(r.copias) || 0), 0);
+  const totalCosto = monthRecords.reduce((s,r)=> s + (Number(r.totalCaras) || 0) * precioDeRegistro(r), 0);
+
   document.getElementById('totalGeneral').textContent = 'S/ ' + totalCosto.toFixed(2);
-  document.getElementById('statRegistros').textContent = records.length;
+  document.getElementById('statRegistros').textContent = monthRecords.length;
   document.getElementById('statCopias').textContent = totalCopias;
   document.getElementById('statCaras').textContent = totalCaras;
+  document.getElementById('tituloTotalGeneral').textContent = `Total general - ${nombreMes}`;
+  document.getElementById('tituloRankingDocentes').textContent = `Ranking por docente - ${nombreMes}`;
+  document.getElementById('tituloRankingGrados').textContent = `Por grado y sección - ${nombreMes}`;
 
-  const byDocente = groupSum(records, r=>r.docente);
+  const byDocente = groupSum(monthRecords, r=>r.docente);
   const maxCaras = byDocente.length ? byDocente[0][1].caras : 1;
   const psDoc = parseInt(document.getElementById('pagSizeDoc').value);
   const totalPagesDoc = Math.max(1, Math.ceil(byDocente.length / psDoc));
@@ -143,18 +212,19 @@ function renderReportes(){
   const startDoc = (pagDoc-1)*psDoc;
   const pageDoc = psDoc >= 9999 ? byDocente : byDocente.slice(startDoc, startDoc+psDoc);
 
-  document.getElementById('pagInfoDoc').textContent =
-    psDoc>=9999 ? `${byDocente.length} docentes` : `${startDoc+1}\u2013${Math.min(startDoc+psDoc,byDocente.length)} de ${byDocente.length}`;
+  document.getElementById('pagInfoDoc').textContent = byDocente.length === 0
+    ? ''
+    : (psDoc>=9999 ? `${byDocente.length} docentes` : `${startDoc+1}–${Math.min(startDoc+psDoc,byDocente.length)} de ${byDocente.length}`);
 
   const rankDoc = document.getElementById('rankDocentes');
   rankDoc.innerHTML = byDocente.length === 0
-    ? '<div class="empty">Sin datos a\u00fan.</div>'
+    ? `<div class="empty">Sin datos para ${nombreMes}.</div>`
     : pageDoc.map(([name, v], i) => `
       <div class="rank-item">
         <div class="rank-num">${startDoc+i+1}</div>
         <div style="flex:1">
           <div class="rank-name">${escapeHtml(name)}</div>
-          <div class="rank-sub">${v.registros} registro(s) \u00b7 ${v.caras} caras</div>
+          <div class="rank-sub">${v.registros} registro(s) · ${v.caras} caras</div>
           <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(v.caras/maxCaras*100).toFixed(0)}%"></div></div>
         </div>
         <div class="rank-amt">S/ ${v.costo.toFixed(2)}</div>
@@ -162,23 +232,25 @@ function renderReportes(){
     `).join('');
   buildPagNav('pagNavDoc', totalPagesDoc, pagDoc, (p)=>{ pagDoc=p; renderReportes(); });
 
-  const byGrado = groupSum(records, r=> (r.grado+' '+r.seccion).trim());
+  const byGrado = groupSum(monthRecords, r=> (r.grado+' '+r.seccion).trim());
   const psGrad = parseInt(document.getElementById('pagSizeGrad').value);
   const totalPagesGrad = Math.max(1, Math.ceil(byGrado.length / psGrad));
   pagGrad = Math.min(pagGrad, totalPagesGrad);
   const startGrad = (pagGrad-1)*psGrad;
   const pageGrad = psGrad >= 9999 ? byGrado : byGrado.slice(startGrad, startGrad+psGrad);
 
-  document.getElementById('pagInfoGrad').textContent =
-    psGrad>=9999 ? `${byGrado.length} secciones` : `${startGrad+1}\u2013${Math.min(startGrad+psGrad,byGrado.length)} de ${byGrado.length}`;
+  document.getElementById('pagInfoGrad').textContent = byGrado.length === 0
+    ? ''
+    : (psGrad>=9999 ? `${byGrado.length} secciones` : `${startGrad+1}–${Math.min(startGrad+psGrad,byGrado.length)} de ${byGrado.length}`);
 
   const rankGr = document.getElementById('rankGrados');
   rankGr.innerHTML = byGrado.length === 0
-    ? '<div class="empty">Sin datos a\u00fan.</div>'
-    : pageGrad.map(([name, v]) => `
+    ? `<div class="empty">Sin datos para ${nombreMes}.</div>`
+    : pageGrad.map(([name, v], i) => `
       <div class="rank-item">
+        <div class="rank-num">${startGrad+i+1}</div>
         <div class="rank-name" style="flex:1">${escapeHtml(name)}
-          <div class="rank-sub">${v.registros} registro(s) \u00b7 ${v.caras} caras</div>
+          <div class="rank-sub">${v.registros} registro(s) · ${v.caras} caras</div>
         </div>
         <div class="rank-amt">S/ ${v.costo.toFixed(2)}</div>
       </div>
@@ -186,6 +258,10 @@ function renderReportes(){
   buildPagNav('pagNavGrad', totalPagesGrad, pagGrad, (p)=>{ pagGrad=p; renderReportes(); });
 }
 
+document.getElementById('selectMesRanking').addEventListener('change', ()=>{
+  pagDoc = 1;
+  pagGrad = 1;
+  renderReportes();
+});
 document.getElementById('pagSizeDoc').addEventListener('change', ()=>{ pagDoc=1; renderReportes(); });
 document.getElementById('pagSizeGrad').addEventListener('change', ()=>{ pagGrad=1; renderReportes(); });
-
