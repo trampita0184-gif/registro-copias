@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#283238" />
     <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -436,7 +437,7 @@
 
         <div class="subpanel active" id="reportes-total">
           <div class="card">
-            <h2>Total general (hist&#243;rico)</h2>
+            <h2 id="tituloTotalGeneral">Total general (hist&#243;rico)</h2>
             <div class="stamp-wrap">
               <div class="stamp">
                 <div class="label">Total a cobrar</div>
@@ -462,7 +463,7 @@
 
         <div class="subpanel" id="reportes-docente">
           <div class="card">
-            <h2>Ranking por docente</h2>
+            <h2 id="tituloRankingDocentes">Ranking por docente</h2>
             <div class="pag-controls">
               <label class="pag-label"
                 >Mostrar:
@@ -484,7 +485,7 @@
 
         <div class="subpanel" id="reportes-grado">
           <div class="card">
-            <h2>Por grado y secci&#243;n</h2>
+            <h2 id="tituloRankingGrados">Por grado y secci&#243;n</h2>
             <div class="pag-controls">
               <label class="pag-label"
                 >Mostrar:
