@@ -24,7 +24,7 @@ function precioDeRegistro(r){
 }
 
 // Estado de paginacion
-let pagReg = 1, pagDoc = 1, pagGrad = 1, pagCfg = 1, pagUsr = 1;
+let pagReg = 1, pagDoc = 1, pagGrad = 1, pagCfg = 1, pagUsr = 1, pagSol = 1;
 
 // ---- Seguridad: escape de texto antes de insertarlo en el DOM ----
 // Cualquier dato que venga de un input del usuario o de Supabase se pasa
@@ -338,4 +338,3 @@ document.querySelectorAll('nav.subtabs button').forEach(btn=>{
     document.getElementById(btn.dataset.subtab).classList.add('active');
   });
 });
-
