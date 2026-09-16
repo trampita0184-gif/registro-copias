@@ -96,6 +96,19 @@ function horaSolicitud(r){
     d.toLocaleString('es-PE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 }
 
+// Card del resumen de solicitudes: barra de titulo, numero grande,
+// icono circular de color y una linea de contexto al pie.
+function statCard(label, valor, icono, color, pie){
+  return `<div class="request-stat">
+    <div class="cap">${escapeHtml(label)}</div>
+    <div class="body">
+      <span class="n">${valor}</span>
+      <span class="ico ${color}">${icono}</span>
+    </div>
+    <div class="foot">${escapeHtml(pie||'')}</div>
+  </div>`;
+}
+
 function renderSolicitudes(){
   const wrap=document.getElementById('solicitudesWrap'), sum=document.getElementById('solicitudesResumen');
   if(!wrap||!sum) return;
@@ -110,9 +123,10 @@ function renderSolicitudes(){
   const p=lista.filter(r=>r.estadoSolicitud==='pendiente').length;
   const e=lista.filter(r=>r.estadoSolicitud==='en_proceso').length;
   const l=lista.filter(r=>r.estadoSolicitud==='lista').length;
-  sum.innerHTML=`<div class="request-stat"><div class="n">${p}</div><div class="l">Pendientes</div></div>
-  <div class="request-stat"><div class="n">${e}</div><div class="l">En proceso</div></div>
-  <div class="request-stat"><div class="n">${l}</div><div class="l">Listas</div></div>`;
+  sum.innerHTML=
+    statCard('Pendientes', p, '⏳', 'amber', p?'Sin tomar todavía':'Nada por tomar')+
+    statCard('En proceso', e, '⚙️', 'blue', e?'En preparación':'Nada en curso')+
+    statCard('Listas', l, '✓', 'green', l?'Por entregar':'Nada por entregar');
   if(!lista.length){wrap.innerHTML='<div class="empty">No hay solicitudes pendientes o en atención.</div>';return;}
   const rows=lista.map(r=>{
     const s=solicitudEstadoClase(r.estadoSolicitud), nuevo=r.solicitudNueva;
@@ -153,10 +167,11 @@ function renderMisSolicitudes(){
   if(tabCount){ tabCount.textContent=total; tabCount.hidden=total===0; }
 
   sum.classList.add('teacher-summary');
-  sum.innerHTML=`<div class="request-stat"><div class="n">${pendientes}</div><div class="l">Pendientes</div></div>
-  <div class="request-stat"><div class="n">${proceso}</div><div class="l">En proceso</div></div>
-  <div class="request-stat"><div class="n">${listas}</div><div class="l">Listas</div></div>
-  <div class="request-stat"><div class="n">${total}</div><div class="l">Total solicitudes</div></div>`;
+  sum.innerHTML=
+    statCard('Pendientes', pendientes, '⏳', 'amber', pendientes?'Esperando atención':'Nada pendiente')+
+    statCard('En proceso', proceso, '⚙️', 'blue', proceso?'Se están sacando':'Nada en curso')+
+    statCard('Listas', listas, '✓', 'green', listas?'Puedes recogerlas':'Nada por recoger')+
+    statCard('Total solicitudes', total, '📋', 'gold', 'Historial completo');
 
   if(!lista.length){wrap.innerHTML='<div class="empty">Todavía no tienes solicitudes registradas.</div>';return;}
 
