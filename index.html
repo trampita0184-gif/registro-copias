@@ -119,7 +119,6 @@
       <section class="panel" id="panel-dashboard">
         <div class="dashboard-head">
           <div>
-            <div class="dashboard-kicker">Resumen operativo</div>
             <h2>Panel de control</h2>
             <p id="dashboardMonthLabel" class="hint">Resumen del mes actual</p>
           </div>
@@ -132,126 +131,137 @@
           </button>
         </div>
 
-        <div class="dashboard-stats">
-          <div class="dashboard-stat">
-            <div class="dashboard-stat-icon">#</div>
-            <div>
-              <div class="dashboard-stat-value" id="dashRegistros">0</div>
-              <div class="dashboard-stat-label">Registros del mes</div>
+        <nav class="subtabs">
+          <button data-subtab="dashboard-operativo" class="active">
+            Resumen operativo
+          </button>
+          <button data-subtab="dashboard-seccion">Resumen por sección</button>
+        </nav>
+
+        <div class="subpanel active" id="dashboard-operativo">
+          <div class="dashboard-stats">
+            <div class="dashboard-stat">
+              <div class="dashboard-stat-icon">#</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashRegistros">0</div>
+                <div class="dashboard-stat-label">Registros del mes</div>
+              </div>
+            </div>
+            <div class="dashboard-stat">
+              <div class="dashboard-stat-icon">J</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashCopias">0</div>
+                <div class="dashboard-stat-label">Copias (juegos)</div>
+              </div>
+            </div>
+            <div class="dashboard-stat">
+              <div class="dashboard-stat-icon">C</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashCaras">0</div>
+                <div class="dashboard-stat-label">Caras impresas</div>
+              </div>
+            </div>
+            <div class="dashboard-stat money">
+              <div class="dashboard-stat-icon">S/</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashPorCobrar">S/ 0.00</div>
+                <div class="dashboard-stat-label">Total a cobrar</div>
+              </div>
+            </div>
+            <div class="dashboard-stat success">
+              <div class="dashboard-stat-icon">✓</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashCobrado">S/ 0.00</div>
+                <div class="dashboard-stat-label">Cobrado</div>
+              </div>
+            </div>
+            <div class="dashboard-stat warning">
+              <div class="dashboard-stat-icon">!</div>
+              <div>
+                <div class="dashboard-stat-value" id="dashPendiente">S/ 0.00</div>
+                <div class="dashboard-stat-label">Saldo pendiente</div>
+              </div>
             </div>
           </div>
-          <div class="dashboard-stat">
-            <div class="dashboard-stat-icon">J</div>
+
+          <div
+            class="dashboard-request-card"
+            id="dashboardSolicitudesCard"
+            hidden
+          >
             <div>
-              <div class="dashboard-stat-value" id="dashCopias">0</div>
-              <div class="dashboard-stat-label">Copias (juegos)</div>
+              <div class="dashboard-request-kicker">🔔 Atención</div>
+              <h3>Solicitudes de copias pendientes</h3>
+              <p id="dashboardSolicitudesText">Hay solicitudes por atender.</p>
+            </div>
+            <div class="dashboard-request-actions">
+              <strong id="dashboardSolicitudesCount">0</strong>
+              <button
+                class="btn small"
+                id="dashboardGoSolicitudesBtn"
+                type="button"
+              >
+                Ver solicitudes
+              </button>
             </div>
           </div>
-          <div class="dashboard-stat">
-            <div class="dashboard-stat-icon">C</div>
-            <div>
-              <div class="dashboard-stat-value" id="dashCaras">0</div>
-              <div class="dashboard-stat-label">Caras impresas</div>
+
+          <div class="dashboard-grid">
+            <div class="card dashboard-card">
+              <h2>Estado de cobros</h2>
+              <div class="dashboard-progress-wrap">
+                <div class="dashboard-progress-label">
+                  <span>Recaudación del mes</span
+                  ><b id="dashCobroPorcentaje">0%</b>
+                </div>
+                <div class="dashboard-progress">
+                  <div id="dashCobroBar" class="dashboard-progress-bar"></div>
+                </div>
+              </div>
+              <div class="dashboard-status-row">
+                <div>
+                  <b id="dashSeccionesPagadas">0</b><span>Secciones pagadas</span>
+                </div>
+                <div>
+                  <b id="dashSeccionesPendientes">0</b
+                  ><span>Secciones pendientes</span>
+                </div>
+                <div>
+                  <b id="dashSeccionesConsumo">0</b><span>Con consumo</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="dashboard-stat money">
-            <div class="dashboard-stat-icon">S/</div>
-            <div>
-              <div class="dashboard-stat-value" id="dashPorCobrar">S/ 0.00</div>
-              <div class="dashboard-stat-label">Total a cobrar</div>
-            </div>
-          </div>
-          <div class="dashboard-stat success">
-            <div class="dashboard-stat-icon">✓</div>
-            <div>
-              <div class="dashboard-stat-value" id="dashCobrado">S/ 0.00</div>
-              <div class="dashboard-stat-label">Cobrado</div>
-            </div>
-          </div>
-          <div class="dashboard-stat warning">
-            <div class="dashboard-stat-icon">!</div>
-            <div>
-              <div class="dashboard-stat-value" id="dashPendiente">S/ 0.00</div>
-              <div class="dashboard-stat-label">Saldo pendiente</div>
+
+            <div class="card dashboard-card">
+              <h2>Información rápida</h2>
+              <div class="dashboard-info-list">
+                <div>
+                  <span>Precio actual por cara</span
+                  ><b id="dashPrecio">S/ 0.00</b>
+                </div>
+                <div>
+                  <span>Último registro</span><b id="dashUltimoRegistro">—</b>
+                </div>
+                <div>
+                  <span>Docentes con registros</span><b id="dashDocentes">0</b>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div
-          class="dashboard-request-card"
-          id="dashboardSolicitudesCard"
-          hidden
-        >
-          <div>
-            <div class="dashboard-request-kicker">🔔 Atención</div>
-            <h3>Solicitudes de copias pendientes</h3>
-            <p id="dashboardSolicitudesText">Hay solicitudes por atender.</p>
-          </div>
-          <div class="dashboard-request-actions">
-            <strong id="dashboardSolicitudesCount">0</strong>
-            <button
-              class="btn small"
-              id="dashboardGoSolicitudesBtn"
-              type="button"
-            >
-              Ver solicitudes
-            </button>
-          </div>
-        </div>
-
-        <div class="dashboard-grid">
+        <div class="subpanel" id="dashboard-seccion">
           <div class="card dashboard-card">
-            <h2>Estado de cobros</h2>
-            <div class="dashboard-progress-wrap">
-              <div class="dashboard-progress-label">
-                <span>Recaudación del mes</span
-                ><b id="dashCobroPorcentaje">0%</b>
-              </div>
-              <div class="dashboard-progress">
-                <div id="dashCobroBar" class="dashboard-progress-bar"></div>
+            <div class="dashboard-table-head">
+              <div>
+                <h2>Resumen por sección</h2>
+                <p class="hint">
+                  Solo se muestran las secciones que tuvieron consumo en el mes.
+                </p>
               </div>
             </div>
-            <div class="dashboard-status-row">
-              <div>
-                <b id="dashSeccionesPagadas">0</b><span>Secciones pagadas</span>
-              </div>
-              <div>
-                <b id="dashSeccionesPendientes">0</b
-                ><span>Secciones pendientes</span>
-              </div>
-              <div>
-                <b id="dashSeccionesConsumo">0</b><span>Con consumo</span>
-              </div>
-            </div>
+            <div id="dashboardSecciones"></div>
           </div>
-
-          <div class="card dashboard-card">
-            <h2>Información rápida</h2>
-            <div class="dashboard-info-list">
-              <div>
-                <span>Precio actual por cara</span
-                ><b id="dashPrecio">S/ 0.00</b>
-              </div>
-              <div>
-                <span>Último registro</span><b id="dashUltimoRegistro">—</b>
-              </div>
-              <div>
-                <span>Docentes con registros</span><b id="dashDocentes">0</b>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card dashboard-card">
-          <div class="dashboard-table-head">
-            <div>
-              <h2>Resumen por sección</h2>
-              <p class="hint">
-                Solo se muestran las secciones que tuvieron consumo en el mes.
-              </p>
-            </div>
-          </div>
-          <div id="dashboardSecciones"></div>
         </div>
       </section>
 
