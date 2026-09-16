@@ -351,9 +351,24 @@
           </button>
         </div>
         <div class="request-summary" id="solicitudesResumen"></div>
+        <div class="pag-controls" id="solicitudesPagControls" hidden>
+          <label class="pag-label"
+            >Mostrar:
+            <select id="pagSizeSol">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="9999">Todas</option>
+            </select>
+            por p&#225;gina
+          </label>
+          <div id="pagInfoSol" class="pag-info"></div>
+        </div>
         <div id="solicitudesWrap">
           <div class="empty">Cargando solicitudes...</div>
         </div>
+        <div id="pagNavSol" class="pag-nav"></div>
       </section>
 
       <!-- REGISTROS -->
