@@ -109,6 +109,33 @@ function statCard(label, valor, icono, color, pie){
   </div>`;
 }
 
+// ------------------------------------------------------------
+// Paginacion de la tabla de solicitudes. Reutiliza buildPagNav y
+// el mismo marcado .pag-controls / .pag-nav de la pestana Registros
+// para que se vea y se maneje igual en todo el sistema.
+// ------------------------------------------------------------
+function paginarSolicitudes(lista){
+  const sel=document.getElementById('pagSizeSol');
+  const ps=parseInt(sel?.value,10) || 10;
+  const totalPaginas=Math.max(1, Math.ceil(lista.length/ps));
+  pagSol=Math.min(Math.max(pagSol,1), totalPaginas);
+  const inicio=(pagSol-1)*ps;
+  const visibles=lista.slice(inicio, inicio+ps);
+  aplicarPaginacionSolicitudes(lista.length, inicio, visibles.length, totalPaginas);
+  return visibles;
+}
+
+function aplicarPaginacionSolicitudes(total, inicio, mostradas, totalPaginas=1){
+  const ctrl=document.getElementById('solicitudesPagControls');
+  const info=document.getElementById('pagInfoSol');
+  const nav=document.getElementById('pagNavSol');
+  // Con pocas solicitudes los controles solo estorban, asi que se ocultan.
+  if(ctrl) ctrl.hidden = total <= 5;
+  if(info) info.textContent = total ? `${inicio+1}\u2013${inicio+mostradas} de ${total}` : '';
+  if(nav && total===0){ nav.innerHTML=''; return; }
+  buildPagNav('pagNavSol', totalPaginas, pagSol, (p)=>{ pagSol=p; renderSolicitudes(); });
+}
+
 function renderSolicitudes(){
   const wrap=document.getElementById('solicitudesWrap'), sum=document.getElementById('solicitudesResumen');
   if(!wrap||!sum) return;
@@ -127,8 +154,13 @@ function renderSolicitudes(){
     statCard('Pendientes', p, '⏳', 'amber', p?'Sin tomar todavía':'Nada por tomar')+
     statCard('En proceso', e, '⚙️', 'blue', e?'En preparación':'Nada en curso')+
     statCard('Listas', l, '✓', 'green', l?'Por entregar':'Nada por entregar');
-  if(!lista.length){wrap.innerHTML='<div class="empty">No hay solicitudes pendientes o en atención.</div>';return;}
-  const rows=lista.map(r=>{
+  if(!lista.length){
+    wrap.innerHTML='<div class="empty">No hay solicitudes pendientes o en atención.</div>';
+    aplicarPaginacionSolicitudes(0,0,0);
+    return;
+  }
+  const pagina=paginarSolicitudes(lista);
+  const rows=pagina.map(r=>{
     const s=solicitudEstadoClase(r.estadoSolicitud), nuevo=r.solicitudNueva;
     let actions='';
     if(s==='pendiente') actions=`<button class="btn small secondary" onclick="${jsCall('cambiarEstadoSolicitudUI',r.id,'en_proceso')}">Tomar</button>
@@ -173,9 +205,13 @@ function renderMisSolicitudes(){
     statCard('Listas', listas, '✓', 'green', listas?'Puedes recogerlas':'Nada por recoger')+
     statCard('Total solicitudes', total, '📋', 'gold', 'Historial completo');
 
-  if(!lista.length){wrap.innerHTML='<div class="empty">Todavía no tienes solicitudes registradas.</div>';return;}
+  if(!lista.length){
+    wrap.innerHTML='<div class="empty">Todavía no tienes solicitudes registradas.</div>';
+    aplicarPaginacionSolicitudes(0,0,0);
+    return;
+  }
 
-  const rows=lista.map(r=>{
+  const rows=paginarSolicitudes(lista).map(r=>{
     const s=solicitudEstadoClase(r.estadoSolicitud);
     return `<tr>
       <td>${escapeHtml(r.fecha||'—')}</td><td>${escapeHtml(r.area||'—')}</td>
@@ -259,3 +295,4 @@ document.getElementById('dashboardGoSolicitudesBtn')?.addEventListener('click',(
 document.getElementById('reloadSolicitudesBtn')?.addEventListener('click',async e=>{
   e.currentTarget.disabled=true; try{await cargarSolicitudes(false);showToast('✓ Solicitudes actualizadas','ok');}finally{e.currentTarget.disabled=false;}
 });
+document.getElementById('pagSizeSol')?.addEventListener('change',()=>{ pagSol=1; renderSolicitudes(); });
