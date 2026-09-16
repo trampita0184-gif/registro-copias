@@ -113,8 +113,14 @@ function renderDashboard(){
             const pagado = !!(cobro && cobro.pagado);
             const monto = pagado ? (Number(cobro.monto) || r.costo) : 0;
             const saldo = Math.max(r.costo - monto, 0);
-            let estadoClass = pagado && saldo <= 0 ? 'pagado' : 'pendiente';
-            let estadoText = pagado && saldo <= 0 ? 'Pagado' : (pagado ? `Saldo S/ ${saldo.toFixed(2)}` : 'Pendiente');
+            // El saldo se compara en centimos con media unidad de tolerancia.
+            // r.costo se acumula sumando caras*precio registro por registro y
+            // en punto flotante eso deja residuos (27.200000000000003), asi
+            // que exigir saldo === 0 hacia que secciones realmente pagadas
+            // mostraran "Saldo S/ 0.00" en lugar de "Pagado".
+            const saldoLiquidado = Math.round(saldo * 100) === 0;
+            let estadoClass = pagado && saldoLiquidado ? 'pagado' : 'pendiente';
+            let estadoText = pagado && saldoLiquidado ? 'Pagado' : (pagado ? `Saldo S/ ${saldo.toFixed(2)}` : 'Pendiente');
             return `
               <tr>
                 <td>${escapeHtml(r.grado)}</td>
@@ -135,4 +141,3 @@ function renderDashboard(){
 document.getElementById('dashboardGoMonthlyBtn').addEventListener('click', ()=>{
   document.querySelector('[data-tab="mensual"]').click();
 });
-
