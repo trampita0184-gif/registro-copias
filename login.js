@@ -1,75 +1,54 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ingresar · Registro de Copias</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#283238">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Copias">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-  <main class="login-screen" id="loginScreen">
-    <div class="login-card login-card--pill">
-      <div class="login-badges" aria-hidden="true">
-        <span class="login-badge">👤</span>
-      </div>
-      <h1>Ingresar</h1>
+/* Pantalla de login separada de la aplicación principal. */
+(async function(){
+  function loadScript(src){
+    return new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = false;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('No se pudo cargar: ' + src));
+      document.head.appendChild(s);
+    });
+  }
 
-      <form id="loginForm" novalidate>
-        <div class="field">
-          <label for="loginEmail" class="sr-only">Correo</label>
-          <input type="email" id="loginEmail" required autocomplete="username" inputmode="email" placeholder="Correo">
-        </div>
+  const errorEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
 
-        <div class="field login-pw-wrap">
-          <label for="loginPassword" class="sr-only">Contraseña</label>
-          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Contraseña">
-          <button type="button" class="login-pw-toggle" id="loginPwToggle" aria-label="Mostrar contraseña" tabindex="-1">👁</button>
-        </div>
+  try{
+    await loadScript('supabase.js');
+    await window.__supabaseReady;
 
-        <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
-        <button type="submit" class="btn login-btn-pill" id="loginBtn"><span>Ingresar</span></button>
-      </form>
+    // Si ya existe una sesión válida, no mostramos el login otra vez.
+    if(await restoreSession()){
+      await cargarEstadoCambioPassword();
+      window.location.replace(necesitaCambiarPassword() ? 'cambiar-password.html' : 'index.html');
+      return;
+    }
+  }catch(error){
+    console.error(error);
+    errorEl.textContent = 'No se pudo conectar con el servicio. Intenta nuevamente.';
+  }
 
-      <div class="login-links">
-        <a href="#" id="loginForgotLink">¿Olvidaste tu contraseña?</a>
-      </div>
-    </div>
-  </main>
+  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
 
-  <script src="login.js"></script>
-  <script>
-    // Mostrar/ocultar contraseña. Puramente visual, no toca login.js
-    // para no arriesgar el flujo de autenticación.
-    (function(){
-      const pw = document.getElementById('loginPassword');
-      const btn = document.getElementById('loginPwToggle');
-      btn?.addEventListener('click', ()=>{
-        const shown = pw.type === 'text';
-        pw.type = shown ? 'password' : 'text';
-        btn.textContent = shown ? '👁' : '🙈';
-        btn.setAttribute('aria-label', shown ? 'Mostrar contraseña' : 'Ocultar contraseña');
-      });
-    })();
-    // No hay flujo de recuperación por correo en este sistema: las
-    // cuentas y contraseñas las administra el admin desde Configuración.
-    // En vez de un enlace muerto, mostramos ese mensaje.
-    (function(){
-      const link = document.getElementById('loginForgotLink');
-      const err = document.getElementById('loginError');
-      link?.addEventListener('click', (e)=>{
-        e.preventDefault();
-        err.textContent = 'Pide al administrador que restablezca tu contraseña desde Configuración.';
-        err.style.color = 'var(--blue)';
-      });
-    })();
-  </script>
-</body>
-</html>
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    errorEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Ingresando…';
+
+    try{
+      await signIn(email, password);
+      await cargarEstadoCambioPassword();
+      window.location.replace(necesitaCambiarPassword() ? 'cambiar-password.html' : 'index.html');
+    }catch(error){
+      console.error(error);
+      errorEl.textContent = 'Correo o contraseña incorrectos.';
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Ingresar';
+    }
+  });
+})();
