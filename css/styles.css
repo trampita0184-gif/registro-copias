@@ -1444,28 +1444,34 @@ table.cobros-table tbody tr.fila-pendiente {
   padding: 34px 30px 28px;
   text-align: center;
   animation: loginRise 0.35s ease both;
+  /* Deja sitio arriba para que el badge, que se ancla al borde de la
+     card, no se encime con el titulo. */
+  margin-top: 32px;
 }
 @keyframes loginRise {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .login-badges {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 14px;
+  /* A caballo sobre el borde superior de la card: mitad afuera, mitad
+     adentro, centrado horizontalmente. */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 .login-badge {
-  width: 54px;
-  height: 54px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   background: var(--blue-soft);
-  border: 1px solid var(--line);
+  border: 3px solid var(--white);
+  box-shadow: 0 4px 10px -4px rgba(35, 39, 43, 0.35);
 }
 .login-card h1 {
   font-family: "Inter", sans-serif;
@@ -1473,7 +1479,7 @@ table.cobros-table tbody tr.fila-pendiente {
   font-size: 1.5rem;
   letter-spacing: 0.5px;
   color: var(--ink);
-  margin: 0 0 22px;
+  margin: 20px 0 22px;
   text-transform: uppercase;
 }
 .login-card form {
